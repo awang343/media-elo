@@ -5,7 +5,6 @@ use media_elo_core::{
 };
 use reqwest::blocking::Client;
 use serde::Serialize;
-use std::env;
 use std::time::Duration;
 use uuid::Uuid;
 
@@ -15,9 +14,7 @@ pub struct Api {
 }
 
 impl Api {
-    pub fn from_env() -> Result<Self> {
-        let base = env::var("MEDIA_ELO_SERVER")
-            .unwrap_or_else(|_| "http://127.0.0.1:7878".to_string());
+    pub fn new(base: String) -> Result<Self> {
         let client = Client::builder()
             .timeout(Duration::from_secs(10))
             .build()

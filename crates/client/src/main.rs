@@ -6,7 +6,7 @@ mod ui;
 use crate::api::Api;
 use crate::app::{AddField, App, EditField, Modal, Screen, TypeManagerMode};
 use crate::pairer::Pairer;
-use anyhow::Result;
+use anyhow::{Context, Result};
 use crossterm::{
     event::{
         self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEvent, KeyEventKind,
@@ -17,10 +17,14 @@ use crossterm::{
 };
 use media_elo_core::STATUSES;
 use ratatui::{backend::CrosstermBackend, Terminal};
+use serde::Deserialize;
+use std::env;
 use std::io::{self, Stdout};
+use std::path::PathBuf;
 
 fn main() -> Result<()> {
-    let api = Api::from_env()?;
+    let base = resolve_server_url()?;
+    let api = Api::new(base)?;
     let pairer = Pairer::new();
     let mut app = App::new(api, pairer)?;
 
@@ -330,6 +334,45 @@ fn handle_type_manager_key(app: &mut App, key: KeyEvent) {
             _ => {}
         },
     }
+}
+
+fn config_path() -> PathBuf {
+    let base = env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .filter(|p| !p.as_os_str().is_empty())
+        .or_else(|| env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))
+        .unwrap_or_else(|| PathBuf::from("."));
+    base.join("media-elo").join("config.toml")
+}
+
+#[derive(Default, Deserialize)]
+struct FileConfig {
+    #[serde(default)]
+    client: ClientSection,
+}
+
+#[derive(Default, Deserialize)]
+struct ClientSection {
+    server: Option<String>,
+}
+
+/// Precedence: `MEDIA_ELO_SERVER` env var → config file `[client].server` →
+/// `http://127.0.0.1:7878`. Missing config file is fine; malformed is fatal.
+fn resolve_server_url() -> Result<String> {
+    if let Ok(v) = env::var("MEDIA_ELO_SERVER") {
+        return Ok(v);
+    }
+    let path = config_path();
+    if path.exists() {
+        let text = std::fs::read_to_string(&path)
+            .with_context(|| format!("reading {}", path.display()))?;
+        let parsed: FileConfig = toml::from_str(&text)
+            .with_context(|| format!("parsing {}", path.display()))?;
+        if let Some(url) = parsed.client.server {
+            return Ok(url);
+        }
+    }
+    Ok("http://127.0.0.1:7878".to_string())
 }
 
 fn handle_text_input(buf: &mut String, key: KeyEvent) {
