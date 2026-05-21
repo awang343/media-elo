@@ -1,0 +1,20 @@
+[package]
+name = "media-elo"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "media-elo"
+path = "src/main.rs"
+
+[dependencies]
+media-elo-core = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+ratatui = "0.29"
+crossterm = "0.28"
+rand = "0.8"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+urlencoding = "2"

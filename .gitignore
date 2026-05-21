@@ -1,0 +1,21 @@
+# Rust build artifacts
+/target/
+**/*.rs.bk
+
+# Local data (the server writes to $XDG_DATA_HOME, but ignore stray copies)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+media.csv
+
+# Editor / OS cruft
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+
+# Environment
+.env
+.env.local

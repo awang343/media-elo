@@ -1,0 +1,23 @@
+[package]
+name = "media-elo-server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "media-elo-server"
+path = "src/main.rs"
+
+[dependencies]
+media-elo-core = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+uuid = { workspace = true }
+chrono = { workspace = true }
+axum = "0.7"
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "signal"] }
+tower = "0.5"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+rusqlite = { version = "0.31", features = ["bundled"] }
+csv = "1.3"
