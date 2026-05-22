@@ -1,6 +1,15 @@
 # Rust build artifacts
-/target/
+/rust/target/
 **/*.rs.bk
+
+# Android build artifacts
+/android/.gradle/
+/android/build/
+/android/app/build/
+/android/local.properties
+/android/.idea/
+/android/captures/
+*.iml
 
 # Local data (the server writes to $XDG_DATA_HOME, but ignore stray copies)
 *.db
