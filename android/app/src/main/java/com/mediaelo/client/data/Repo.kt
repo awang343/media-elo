@@ -1,5 +1,7 @@
 package com.mediaelo.client.data
 
+import com.mediaelo.client.api.AddRequest
+import com.mediaelo.client.api.EditRequest
 import com.mediaelo.client.api.MediaEloClient
 import com.mediaelo.client.api.Row
 import com.mediaelo.client.api.UndoRequest
@@ -10,9 +12,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
 /**
- * Single source of truth for the row list shared by all screens.
- * After a vote, the server returns the two updated rows; we splice them in
- * so the library view stays consistent without a round-trip refresh.
+ * Single source of truth for rows + types, shared by all screens.
+ * Mutating endpoints splice the server's response into the local lists so
+ * dependent screens (Library, Vote) update without an extra round-trip.
  *
  * The HTTP layer reads the server URL from [Settings] on every request,
  * so changing it in the Settings screen takes effect on the next call.
@@ -23,13 +25,38 @@ object Repo {
     private val _rows = MutableStateFlow<List<Row>?>(null)
     val rows: StateFlow<List<Row>?> = _rows.asStateFlow()
 
+    private val _types = MutableStateFlow<List<String>?>(null)
+    val types: StateFlow<List<String>?> = _types.asStateFlow()
+
     suspend fun refresh() {
         _rows.value = client.listRows()
     }
 
-    /** Drop cached rows so the next screen entry fetches fresh from the new server. */
+    suspend fun refreshTypes() {
+        _types.value = client.listTypes()
+    }
+
+    /** Drop cached rows + types so the next screen entry refetches from the new server. */
     fun invalidate() {
         _rows.value = null
+        _types.value = null
+    }
+
+    suspend fun addRow(req: AddRequest): Row {
+        val row = client.addRow(req)
+        _rows.update { it?.plus(row) }
+        return row
+    }
+
+    suspend fun editRow(id: String, req: EditRequest): Row {
+        val updated = client.editRow(id, req)
+        _rows.update { current -> current?.map { if (it.id == id) updated else it } }
+        return updated
+    }
+
+    suspend fun deleteRow(id: String) {
+        client.deleteRow(id)
+        _rows.update { current -> current?.filter { it.id != id } }
     }
 
     suspend fun vote(winnerId: String, loserId: String): VoteResponse {
