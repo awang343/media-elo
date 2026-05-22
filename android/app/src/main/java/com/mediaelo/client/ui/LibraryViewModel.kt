@@ -2,11 +2,14 @@ package com.mediaelo.client.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.mediaelo.client.api.MediaEloClient
 import com.mediaelo.client.api.Row
+import com.mediaelo.client.data.Repo
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface LibraryState {
@@ -15,31 +18,27 @@ sealed interface LibraryState {
     data class Error(val message: String) : LibraryState
 }
 
-class LibraryViewModel(
-    // 10.0.2.2 = host loopback from the Android emulator.
-    // For a physical device: `adb reverse tcp:7878 tcp:7878` then use 127.0.0.1.
-    baseUrl: String = "http://10.0.2.2:7878",
-) : ViewModel() {
-    private val client = MediaEloClient(baseUrl)
+class LibraryViewModel : ViewModel() {
+    private val error = MutableStateFlow<String?>(null)
 
-    private val _state = MutableStateFlow<LibraryState>(LibraryState.Loading)
-    val state: StateFlow<LibraryState> = _state.asStateFlow()
+    val state: StateFlow<LibraryState> = combine(Repo.rows, error) { rows, err ->
+        when {
+            err != null -> LibraryState.Error(err)
+            rows == null -> LibraryState.Loading
+            else -> LibraryState.Loaded(rows.sortedByDescending { it.elo })
+        }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, LibraryState.Loading)
 
-    init { refresh() }
+    init { if (Repo.rows.value == null) refresh() }
 
     fun refresh() {
-        _state.value = LibraryState.Loading
+        error.value = null
         viewModelScope.launch {
-            _state.value = try {
-                LibraryState.Loaded(client.listRows().sortedByDescending { it.elo })
+            try {
+                Repo.refresh()
             } catch (t: Throwable) {
-                LibraryState.Error(t.message ?: t.javaClass.simpleName)
+                error.value = t.message ?: t.javaClass.simpleName
             }
         }
-    }
-
-    override fun onCleared() {
-        client.close()
-        super.onCleared()
     }
 }

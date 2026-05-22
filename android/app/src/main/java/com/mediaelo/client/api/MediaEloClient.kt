@@ -61,5 +61,12 @@ class MediaEloClient(private val baseUrl: String) {
             setBody(VoteRequest(winnerId, loserId))
         }.body()
 
+    suspend fun undo(req: UndoRequest) {
+        http.post(url("/undo")) {
+            contentType(ContentType.Application.Json)
+            setBody(req)
+        }
+    }
+
     fun close() = http.close()
 }

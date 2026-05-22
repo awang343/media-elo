@@ -54,3 +54,13 @@ data class RenameTypeRequest(@SerialName("new_name") val newName: String)
 
 @Serializable
 data class ReorderTypesRequest(val names: List<String>)
+
+@Serializable
+data class UndoRequest(
+    @SerialName("a_id") val aId: String,
+    @SerialName("b_id") val bId: String,
+    @SerialName("old_elo_a") val oldEloA: Double,
+    @SerialName("old_elo_b") val oldEloB: Double,
+    @SerialName("old_matches_a") val oldMatchesA: Int,
+    @SerialName("old_matches_b") val oldMatchesB: Int,
+)
