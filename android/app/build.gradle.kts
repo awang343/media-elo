@@ -19,7 +19,12 @@ android {
 
     buildTypes {
         release {
+            // R8 left off so ktor/kotlinx-serialization don't need extra keep rules.
+            // Flip on once we have a verified set of -keep rules.
             isMinifyEnabled = false
+            // Sign with the debug keystore so sideloads work without a real keystore.
+            // Replace with a proper release keystore before any public distribution.
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
