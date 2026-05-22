@@ -111,11 +111,11 @@ class VoteViewModel : ViewModel() {
                     deltaWinner = resp.deltaWinner,
                     deltaLoser = resp.deltaLoser,
                 )
+                voting = false
                 nextPair()
             } catch (t: Throwable) {
-                _state.value = VoteState.Error(t.message ?: t.javaClass.simpleName)
-            } finally {
                 voting = false
+                _state.value = VoteState.Error(t.message ?: t.javaClass.simpleName)
             }
         }
     }
