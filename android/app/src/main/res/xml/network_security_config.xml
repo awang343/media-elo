@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow plaintext to the local dev server.
-         10.0.2.2 = Android emulator's view of host loopback.
-         For physical devices, run `adb reverse tcp:7878 tcp:7878` and keep using localhost. -->
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">localhost</domain>
-        <domain includeSubdomains="true">10.0.2.2</domain>
-        <domain includeSubdomains="true">127.0.0.1</domain>
-    </domain-config>
+    <!-- The server is user-configurable in Settings, so cleartext has to be open
+         broadly (LAN IPs, mDNS, etc.). The trade-off is intentional for a
+         self-hosted personal app. -->
+    <base-config cleartextTrafficPermitted="true" />
 </network-security-config>

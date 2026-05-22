@@ -14,20 +14,22 @@ import kotlinx.coroutines.flow.update
  * After a vote, the server returns the two updated rows; we splice them in
  * so the library view stays consistent without a round-trip refresh.
  *
- * 10.0.2.2 = emulator host loopback. For a physical device, run
- *   adb reverse tcp:7878 tcp:7878
- * and reach the host via 127.0.0.1.
+ * The HTTP layer reads the server URL from [Settings] on every request,
+ * so changing it in the Settings screen takes effect on the next call.
  */
 object Repo {
-    private const val BASE_URL = "http://10.0.2.2:7878"
-
-    private val client = MediaEloClient(BASE_URL)
+    private val client = MediaEloClient { Settings.baseUrl.value }
 
     private val _rows = MutableStateFlow<List<Row>?>(null)
     val rows: StateFlow<List<Row>?> = _rows.asStateFlow()
 
     suspend fun refresh() {
         _rows.value = client.listRows()
+    }
+
+    /** Drop cached rows so the next screen entry fetches fresh from the new server. */
+    fun invalidate() {
+        _rows.value = null
     }
 
     suspend fun vote(winnerId: String, loserId: String): VoteResponse {

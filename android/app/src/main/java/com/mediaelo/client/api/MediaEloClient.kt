@@ -15,7 +15,8 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 
-class MediaEloClient(private val baseUrl: String) {
+/** baseUrlProvider is evaluated per request, so updates to settings take effect immediately. */
+class MediaEloClient(private val baseUrlProvider: () -> String) {
     private val http = HttpClient(OkHttp) {
         install(ContentNegotiation) {
             json(Json {
@@ -25,7 +26,7 @@ class MediaEloClient(private val baseUrl: String) {
         }
     }
 
-    private fun url(path: String) = "${baseUrl.trimEnd('/')}$path"
+    private fun url(path: String) = "${baseUrlProvider().trimEnd('/')}$path"
 
     suspend fun listRows(): List<Row> =
         http.get(url("/rows")).body()

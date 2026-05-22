@@ -2,6 +2,7 @@ package com.mediaelo.client.ui
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 private enum class Tab(val label: String, val icon: ImageVector) {
     Library("Library", Icons.AutoMirrored.Outlined.List),
     Vote("Vote", Icons.Outlined.ThumbUp),
+    Settings("Settings", Icons.Outlined.Settings),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -44,6 +46,7 @@ fun AppRoot() {
         when (selected) {
             Tab.Library -> LibraryScreen(contentPadding = padding)
             Tab.Vote -> VoteScreen(contentPadding = padding)
+            Tab.Settings -> SettingsScreen(contentPadding = padding)
         }
     }
 }
