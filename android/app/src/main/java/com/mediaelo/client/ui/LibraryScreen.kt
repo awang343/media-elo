@@ -32,7 +32,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -68,17 +67,8 @@ fun LibraryScreen(
     var sheet by remember { mutableStateOf<Sheet?>(null) }
     val scope = rememberCoroutineScope()
 
-    Scaffold(
-        modifier = Modifier.padding(contentPadding),
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { sheet = Sheet.Add },
-                icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
-                text = { Text("Add") },
-            )
-        },
-    ) { inner ->
-        Column(modifier = Modifier.fillMaxSize().padding(inner)) {
+    Box(modifier = Modifier.fillMaxSize().padding(contentPadding)) {
+        Column(modifier = Modifier.fillMaxSize()) {
             FilterBar(
                 filters = state.filters,
                 types = state.types,
@@ -98,6 +88,14 @@ fun LibraryScreen(
                 }
             }
         }
+        ExtendedFloatingActionButton(
+            onClick = { sheet = Sheet.Add },
+            icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
+            text = { Text("Add") },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp),
+        )
     }
 
     when (val s = sheet) {
